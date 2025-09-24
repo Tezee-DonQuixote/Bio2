@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tezee - Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .selectable {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+            background: #000;
+        }
+
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            display: none;
+        }
+
+        .video-background.active {
+            display: block;
+        }
+
+        .video-background video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.7);
+        }
+
+        .container {
+            position: relative;
+            width: 420px;
+            height: 580px;
+            transition: transform 0.1s;
+            display: none;
+        }
+
+        .container.active {
+            display: block;
+            animation: containerAppear 1s ease-out;
+        }
+
+        @keyframes containerAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(50px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .profile-card {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(255, 0, 0, 0.3);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 0, 0, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: rotate(45deg) translateX(-100%); }
+            100% { transform: rotate(45deg) translateX(100%); }
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            border: 2px solid rgba(255, 0, 0, 0.5);
+            object-fit: cover;
+            animation: avatarAppear 0.8s ease-out 0.3s both;
+        }
+
+        @keyframes avatarAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0.5) rotate(-180deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .main-name {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+            animation: textAppear 0.6s ease-out 0.5s both;
+        }
+
+        @keyframes textAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .original-name {
+            font-size: 1.1em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 25px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.5s ease;
+            animation: textAppear 0.6s ease-out 0.7s both;
+        }
+
+        .original-name.hidden {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .social-buttons {
+            display: none;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .social-buttons.active {
+            display: flex;
+            animation: buttonsAppear 0.8s ease-out 0.9s both;
+        }
+
+        @keyframes buttonsAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .social-buttons.single-mode {
+            gap: 0;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .social-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 0, 0, 0.3);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.5s ease;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .social-btn img {
+            width: 70%;
+            height: 70%;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+            transition: all 0.3s ease;
+        }
+
+        .social-btn:hover {
+            background: rgba(255, 0, 0, 0.5);
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+        }
+
+        .social-btn:hover img {
+            transform: scale(1.1);
+            filter: brightness(0) invert(1) drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
+        }
+
+        .social-btn.fade-out {
+            opacity: 0;
+            transform: scale(0.5);
+            width: 0;
+            margin: 0;
+            transition: all 0.5s ease;
+        }
+
+        .social-btn.center-mode {
+            transform: scale(1.3);
+            z-index: 10;
+            position: relative;
+            animation: centerPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes centerPulse {
+            0%, 100% { transform: scale(1.3); }
+            50% { transform: scale(1.4); }
+        }
+
+        .links-container {
+            display: none;
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+            animation: slideUp 0.6s ease-out;
+            min-height: 120px;
+        }
+
+        .links-container.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .link-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin: 8px 0;
+            color: white;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        .link-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .link-item:active {
+            transform: scale(0.95);
+        }
+
+        .site-link {
+            display: inline-block;
+            padding: 12px 30px;
+            background: rgba(255, 0, 0, 0.3);
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            transition: all 0.5s ease;
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            margin-top: 10px;
+            animation: buttonAppear 0.6s ease-out 1.1s both;
+        }
+
+        @keyframes buttonAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .site-link.hidden {
+            opacity: 0;
+            height: 0;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .decoration-line {
+            width: 60%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 0, 0, 0.5), transparent);
+            margin: 20px auto;
+            animation: lineAppear 0.6s ease-out 0.8s both;
+        }
+
+        @keyframes lineAppear {
+            0% {
+                opacity: 0;
+                width: 0%;
+            }
+            100% {
+                opacity: 1;
+                width: 60%;
+            }
+        }
+
+        .disclaimer {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 0, 0, 0.5);
+            text-align: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+            animation: fadeOut 2s ease-in-out 2s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; display: none; }
+        }
+
+        .gallop-btn {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(255, 0, 0, 0.3);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1500;
+            transition: all 0.5s ease;
+            box-shadow: 0 5px 20px rgba(255, 0, 0, 0.3);
+            animation: gallopPulse 2s infinite;
+        }
+
+        .gallop-btn.visible {
+            transform: translate(-50%, -50%) scale(1);
+            animation: gallopAppear 0.8s ease-out, gallopPulse 2s infinite 0.8s;
+        }
+
+        @keyframes gallopAppear {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .gallop-btn.hidden {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5);
+            pointer-events: none;
+            transition: all 0.8s ease;
+        }
+
+        @keyframes gallopPulse {
+            0% { box-shadow: 0 5px 20px rgba(255, 0, 0, 0.3); }
+            50% { box-shadow: 0 8px 25px rgba(255, 0, 0, 0.5); }
+            100% { box-shadow: 0 5px 20px rgba(255, 0, 0, 0.3); }
+        }
+
+        .sound-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: none;
+            animation: controlsAppear 0.6s ease-out 1.2s both;
+        }
+
+        .sound-controls.active {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .sound-toggle {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            border-radius: 20px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sound-toggle:hover {
+            background: rgba(255, 0, 0, 0.3);
+            transform: scale(1.05);
+        }
+
+        .sound-toggle.muted {
+            background: rgba(255, 0, 0, 0.3);
+        }
+
+        .sound-toggle.unmuted {
+            background: rgba(0, 255, 0, 0.3);
+        }
+
+        .volume-slider-container {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            border-radius: 20px;
+            padding: 15px;
+            display: none;
+            backdrop-filter: blur(10px);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .volume-slider-container.active {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .volume-slider {
+            width: 120px;
+            height: 5px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgba(255, 0, 0, 0.8);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            background: rgba(255, 0, 0, 1);
+            transform: scale(1.2);
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgba(255, 0, 0, 0.8);
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .volume-slider::-moz-range-thumb:hover {
+            background: rgba(255, 0, 0, 1);
+            transform: scale(1.2);
+        }
+
+        .sound-icon {
+            color: white;
+            font-size: 1.2em;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .sound-text {
+            color: white;
+            font-size: 0.9em;
+            font-family: 'Courier New', monospace;
+        }
+
+        @keyframes controlsAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                height: auto;
+                min-height: 550px;
+                margin: 20px;
+            }
+            .profile-card {
+                padding: 30px;
+            }
+            .social-btn {
+                width: 55px;
+                height: 55px;
+            }
+            .sound-controls {
+                top: 10px;
+                right: 10px;
+            }
+            .volume-slider {
+                width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="disclaimer" id="disclaimer">
+        Сайт был создан по приколу по этому могут быть недочёты.
+    </div>
+
+    <button class="gallop-btn" id="gallopBtn">Gallop On</button>
+
+    <div class="video-background" id="videoBackground">
+        <video id="bgVideo" loop playsinline>
+            <source src="https://files.catbox.moe/rvkv8u.mp4" type="video/mp4">
+            Ваш браузер не поддерживает видео.
+        </video>
+    </div>
+
+    <div class="sound-controls" id="soundControls">
+        <div class="sound-toggle muted" id="soundToggle">
+            <span class="sound-icon">🔇</span>
+            <span class="sound-text">Вкл звук</span>
+        </div>
+        <div class="volume-slider-container" id="volumeSliderContainer">
+            <input type="range" min="0" max="1" step="0.1" value="0.5" class="volume-slider" id="volumeSlider">
+        </div>
+    </div>
+
+    <div class="container" id="interactiveCard">
+        <div class="profile-card">
+            <img src="https://i.ibb.co/jZvZyfyQ/photo-2025-01-14-20-43-36.jpg" alt="Tezee Avatar" class="avatar">
+            <h1 class="main-name selectable">⚫Tezee🔴</h1>
+            <div class="decoration-line"></div>
+            <p class="original-name selectable" id="originalName">tezee_its_me</p>
+            
+            <div class="social-buttons" id="socialButtons">
+                <a class="social-btn" id="socialBtn1" data-type="discord">
+                    <img src="https://i.ibb.co/HTm5N2nW/discord-icon.png" alt="Discord">
+                </a>
+                <a class="social-btn" id="socialBtn2" data-type="github">
+                    <img src="https://i.ibb.co/Y4bt6QLC/github-icon.png" alt="GitHub">
+                </a>
+                <a class="social-btn" id="socialBtn3" data-type="roblox">
+                    <img src="https://i.ibb.co/MxVxRD01/roblox-icon.png" alt="Roblox">
+                </a>
+                <a class="social-btn" id="socialBtn4" data-type="steam">
+                    <img src="https://i.ibb.co/DHrKmDLk/steam-icon.png" alt="Steam">
+                </a>
+            </div>
+
+            <div class="links-container" id="linksContainer"></div>
+            
+            <a class="site-link" id="portfolioBtn">Tezee Portfolio</a>
+        </div>
+    </div>
+
+    <script>
+        // Данные для ссылок
+        const linkData = {
+            'discord': [
+                { text: 'tezee_its_me', link: 'tezee_its_me', action: 'copy' },
+                { text: 'Web', link: 'https://discordapp.com/users/829078720915701791', action: 'open' }
+            ],
+            'github': [
+                { text: 'Tezee-DonQuixote', link: 'https://github.com/Tezee-DonQuixote', action: 'open' }
+            ],
+            'roblox': [
+                { text: 'Limbo-ketety4', link: 'https://www.roblox.com/users/1240586947/profile', action: 'open' }
+            ],
+            'steam': [
+                { text: 'Steam-Tezee', link: 'https://steamcommunity.com/profiles/76561199112098020/', action: 'open' }
+            ]
+        };
+
+        // Основная логика
+        const gallopBtn = document.getElementById('gallopBtn');
+        const disclaimer = document.getElementById('disclaimer');
+        const videoBackground = document.getElementById('videoBackground');
+        const bgVideo = document.getElementById('bgVideo');
+        const soundControls = document.getElementById('soundControls');
+        const soundToggle = document.getElementById('soundToggle');
+        const volumeSliderContainer = document.getElementById('volumeSliderContainer');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const interactiveCard = document.getElementById('interactiveCard');
+        const originalName = document.getElementById('originalName');
+        const socialButtons = document.getElementById('socialButtons');
+        const portfolioBtn = document.getElementById('portfolioBtn');
+        const linksContainer = document.getElementById('linksContainer');
+
+        let websiteStarted = false;
+        let currentActiveButton = null;
+        let isMuted = true; // Начинаем с выключенного звука
+        let isVolumeVisible = false;
+
+        // Настройка видео
+        bgVideo.volume = 0.5; // Начальная громкость 50%
+        bgVideo.muted = true; // Начинаем с выключенного звука для автовоспроизведения
+
+        // Убедимся, что видео зацикливается
+        bgVideo.loop = true;
+
+        // Обработчик громкости
+        volumeSlider.addEventListener('input', function() {
+            bgVideo.volume = this.value;
+            updateSoundIcon();
+        });
+
+        // Переключение звука
+        soundToggle.addEventListener('click', function() {
+            isMuted = !isMuted;
+            bgVideo.muted = isMuted;
+            updateSoundToggle();
+            
+            // Показываем/скрываем ползунок громкости
+            if (!isMuted) {
+                setTimeout(() => {
+                    volumeSliderContainer.classList.add('active');
+                    isVolumeVisible = true;
+                }, 100);
+            } else {
+                volumeSliderContainer.classList.remove('active');
+                isVolumeVisible = false;
+            }
+        });
+
+        // Скрываем ползунок при клике вне его области
+        document.addEventListener('click', function(event) {
+            if (isVolumeVisible && !soundControls.contains(event.target)) {
+                volumeSliderContainer.classList.remove('active');
+                isVolumeVisible = false;
+            }
+        });
+
+        function updateSoundToggle() {
+            if (isMuted) {
+                soundToggle.classList.remove('unmuted');
+                soundToggle.classList.add('muted');
+                soundToggle.querySelector('.sound-text').textContent = 'Вкл звук';
+            } else {
+                soundToggle.classList.remove('muted');
+                soundToggle.classList.add('unmuted');
+                soundToggle.querySelector('.sound-text').textContent = 'Выкл звук';
+            }
+            updateSoundIcon();
+        }
+
+        function updateSoundIcon() {
+            const soundIcon = soundToggle.querySelector('.sound-icon');
+            if (bgVideo.muted || bgVideo.volume === 0) {
+                soundIcon.textContent = '🔇';
+            } else if (bgVideo.volume < 0.3) {
+                soundIcon.textContent = '🔈';
+            } else if (bgVideo.volume < 0.7) {
+                soundIcon.textContent = '🔉';
+            } else {
+                soundIcon.textContent = '🔊';
+            }
+        }
+
+        // Показываем кнопку Gallop On после дисклеймера
+        setTimeout(() => {
+            gallopBtn.classList.add('visible');
+        }, 2000);
+
+        // Функция запуска сайта
+        function startWebsite() {
+            if (websiteStarted) return;
+            websiteStarted = true;
+            
+            gallopBtn.classList.add('hidden');
+            disclaimer.style.display = 'none';
+            
+            setTimeout(() => {
+                videoBackground.classList.add('active');
+                interactiveCard.classList.add('active');
+                soundControls.classList.add('active');
+                
+                // Запускаем видео с задержкой для плавности
+                setTimeout(() => {
+                    bgVideo.play().catch(e => {
+                        console.log('Автовоспроизведение заблокировано:', e);
+                        showPlayButton();
+                    });
+                }, 500);
+            }, 300);
+        }
+
+        function showPlayButton() {
+            const playBtn = document.createElement('button');
+            playBtn.textContent = '▶️ Воспроизвести видео';
+            playBtn.style.position = 'fixed';
+            playBtn.style.top = '80px';
+            playBtn.style.left = '20px';
+            playBtn.style.background = 'rgba(255, 0, 0, 0.5)';
+            playBtn.style.color = 'white';
+            playBtn.style.border = '1px solid rgba(255, 0, 0, 0.7)';
+            playBtn.style.padding = '10px 15px';
+            playBtn.style.borderRadius = '10px';
+            playBtn.style.cursor = 'pointer';
+            playBtn.style.zIndex = '100';
+            playBtn.style.backdropFilter = 'blur(10px)';
+            playBtn.addEventListener('click', function() {
+                bgVideo.play();
+                playBtn.remove();
+            });
+            document.body.appendChild(playBtn);
+        }
+
+        gallopBtn.addEventListener('click', startWebsite);
+
+        // Анимация при нажатии на Portfolio
+        portfolioBtn.addEventListener('click', function() {
+            portfolioBtn.classList.add('hidden');
+            originalName.classList.add('hidden');
+            
+            setTimeout(() => {
+                socialButtons.classList.add('active');
+            }, 500);
+        });
+
+        // Обработчик для социальных кнопок
+        function selectSocialButton(clickedButton) {
+            if (currentActiveButton === clickedButton) {
+                resetSocialButtons();
+                return;
+            }
+
+            currentActiveButton = clickedButton;
+            const buttonType = clickedButton.dataset.type;
+            const buttons = socialButtons.querySelectorAll('.social-btn');
+            
+            buttons.forEach(button => {
+                if (button !== clickedButton) {
+                    button.classList.add('fade-out');
+                }
+            });
+
+            fillLinksContainer(buttonType);
+
+            setTimeout(() => {
+                clickedButton.classList.add('center-mode');
+                socialButtons.classList.add('single-mode');
+                setTimeout(() => linksContainer.classList.add('active'), 300);
+            }, 500);
+        }
+
+        function fillLinksContainer(buttonType) {
+            linksContainer.innerHTML = '';
+            const links = linkData[buttonType];
+            
+            if (links) {
+                links.forEach(linkInfo => {
+                    const linkItem = document.createElement('div');
+                    linkItem.className = 'link-item';
+                    linkItem.textContent = linkInfo.text;
+                    
+                    linkItem.addEventListener('click', function() {
+                        if (linkInfo.action === 'copy') {
+                            navigator.clipboard.writeText(linkInfo.link).then(() => {
+                                this.textContent = '✓ Скопировано!';
+                                setTimeout(() => {
+                                    this.textContent = linkInfo.text;
+                                }, 2000);
+                            });
+                        } else if (linkInfo.action === 'open') {
+                            window.open(linkInfo.link, '_blank');
+                        }
+                    });
+                    
+                    linksContainer.appendChild(linkItem);
+                });
+            }
+        }
+
+        function resetSocialButtons() {
+            const buttons = socialButtons.querySelectorAll('.social-btn');
+            linksContainer.classList.remove('active');
+            buttons.forEach(button => button.classList.remove('fade-out', 'center-mode'));
+            setTimeout(() => socialButtons.classList.remove('single-mode'), 300);
+            currentActiveButton = null;
+        }
+
+        // Назначаем обработчики для кнопок
+        document.querySelectorAll('.social-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                selectSocialButton(this);
+            });
+        });
+
+        // Эффект наклона
+        document.addEventListener('mousemove', (e) => {
+            const xAxis = (e.pageX - window.innerWidth / 2) / 25;
+            const yAxis = (e.pageY - window.innerHeight / 2) / 25;
+            interactiveCard.style.transform = `rotateY(${xAxis}deg) rotateX(${-yAxis}deg) scale(1.03)`;
+        });
+
+        interactiveCard.addEventListener('mouseleave', () => {
+            interactiveCard.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1)';
+        });
+
+        // Гарантируем зацикливание видео
+        bgVideo.addEventListener('ended', function() {
+            console.log('Видео закончилось, перезапускаем...');
+            bgVideo.currentTime = 0;
+            bgVideo.play();
+        });
+
+        // Обработка ошибок видео
+        bgVideo.addEventListener('error', function() {
+            console.log('Ошибка загрузки видео, используем градиентный фон');
+            videoBackground.innerHTML = '<div style="width:100%;height:100%;background:linear-gradient(45deg, #000, #330000, #000);background-size:400% 400%;animation:gradient 10s ease infinite;"></div>';
+            
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes gradient {
+                    0% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
+                    100% { background-position: 0% 50%; }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+
+        // Инициализация
+        updateSoundToggle();
+    </script>
+</body>
+</html>
